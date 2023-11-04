@@ -47,6 +47,10 @@ python3 ADautomator.py
 - Industry standard tools such as impacket for kerberoasting, asreproasting,
 - Automatically identify if printnightmare and zerologin are vulnerable
 
+##
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/29ada805-108c-4e66-9ebc-e6a16e6f8896)
+
+
 
 ![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
 
