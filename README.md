@@ -20,3 +20,36 @@ The overall intent of this project is to provide a user with a graphical user in
 
 ```bash
 python3 ADautomator.py
+```
+
+
+## Features
+
+- Automated SMB protocol penetration testing.
+- Ability to customize command execution for targeted assessments.
+- Scripted interaction with CrackMapExec for enhanced testing procedures.
+- Output pattern matching for quick identification of key security insights.
+- Designed with DoD-level security and private sector flexibility in mind.
+
+## Maintainer
+
+[Taupe Solutions](https://www.taupe-solutions.com/)
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Disclaimer](#disclaimer)
+- [Contact Us](#contact-us)
+
+## Getting Started
+
+### Latest stable release
+
+
+![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
+
+
