@@ -50,6 +50,8 @@ python3 ADautomator.py
 ##
 ![image](https://github.com/csb21jb/ADautomator/assets/94072917/29ada805-108c-4e66-9ebc-e6a16e6f8896)
 
+## Run multiple commands with a single click and known or unknown credentials
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/8beff47a-6977-4f84-bb48-48868c3405df)
 
 
 ![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
