@@ -39,6 +39,8 @@ python3 ADautomator.py
 - Ability to upload usernames to create a custom username list, i.e. mike jones =mike.jones, mjones, mikej, jones.mike, jonesm, etc
 - Industry standard tools such as impacket for kerberoasting, asreproasting,
 - Automatically identify if printnightmare and zerologin are vulnerable
+
+
 ![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
 
 
