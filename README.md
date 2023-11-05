@@ -20,15 +20,6 @@ The overall intent of this project is to provide a user with a graphical user in
 ---
 
 ### Usage
-For now, edit the path to crackmapexec in the script. You can install find the path by using the command:
-
-```bash
-sudo apt install crackmapexec
-which crackmapexec
-```
-#### Change the path in the script
-![image](https://github.com/csb21jb/ADautomator/assets/94072917/f976aee3-6757-4237-8ac7-08beaeb733ce)
-
 ```bash
 python3 ADautomator.py
 ```
