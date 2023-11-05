@@ -33,7 +33,7 @@ python3 ADautomator.py
 - Output pattern matching for quick identification of key security insights.
 - Designed with DoD-level security and private sector flexibility in mind.
 
-## Features We are Working On!!
+## Upcoming Features!!
 
 - Cradle to grave Active Directory Penetration testing using the PTES framework
 - Ability to upload usernames to create a custom username list, i.e. mike jones =mike.jones, mjones, mikej, jones.mike, jonesm, etc
