@@ -36,7 +36,9 @@ python3 ADautomator.py
 - Cradle to grave Active Directory Penetration testing using the PTES framework
 - Ability to upload usernames to create a custom username list, i.e. mike jones =mike.jones, mjones, mikej, jones.mike, jonesm, etc
 - Industry standard tools such as impacket for kerberoasting, asreproasting,
+- Ability to incorporate secretsdump
 - Automatically identify if printnightmare and zerologin are vulnerable
+
 
 ##
 ![image](https://github.com/csb21jb/ADautomator/assets/94072917/29ada805-108c-4e66-9ebc-e6a16e6f8896)
