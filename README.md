@@ -15,8 +15,6 @@ d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888 
 The overall intent of this project is to provide a user with a graphical user interface in which you can use the penetration testing evaluation standard (PTES) to create a methodological approach and penetration testing from a graphical user interface written in Python. 
 
 ## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP
-
-**Currently only crackmapexec works in the toolset so use with caution.**
 ---
 
 ### Usage
