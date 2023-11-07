@@ -174,7 +174,7 @@ def main_menu():
         cidr_range = input("Provide a CIDR range - This will be noisy! ")
         print("This command will output the results in this directory ""IP_DTG""")
         output_filename = generate_single_filename(cidr_range)  # use cidr_range instead of entered_ip
-        dc_ip = input("Enter the Domain Controller IP to add to /etc/hosts, leave blank: ")
+        dc_ip = input("Enter the Domain Controller IP to add to /etc/hosts, leave blank if its already there: ")
         add_to_hosts = input("Do you want to enter the DC IP to the /etc/hosts? (y/n): ").strip().lower()
         if add_to_hosts == 'y':
             append_to_hosts(dc_ip, domain_name)  # Only call if user confirms with a y
