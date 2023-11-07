@@ -171,7 +171,7 @@ def main_menu():
         
     elif choice == "1":
         domain_name = input("Enter the domain name: ")
-        cidr_range = input("Provide a CIDR range - This will be noisy! ")
+        cidr_range = input("Provide a CIDR range to scan ad AD connected computers - This will be noisy! ")
         print("This command will output the results in this directory ""IP_DTG""")
         output_filename = generate_single_filename(cidr_range)  # use cidr_range instead of entered_ip
         dc_ip = input("Enter the Domain Controller IP to add to /etc/hosts, leave blank if its already there: ")
