@@ -10,9 +10,9 @@ d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888 
 ```
 ## Description
 
-**This repository contains `ADautomator.py`, an automated script that provides the user with an interactive interface to conduct Kerberoasting, ASREProasting, domain controller enumneration that is focused on Active Directory penetration testing. 
+**This repository contains `ADautomator.py`, an automated script that provides the user with an interactive interface to conduct Kerberoasting, ASREProasting, and domain controller enumneration that is focused on Active Directory penetration testing. 
 
-The overall intent of this project is to provide a user with a graphical user interface in which you can use the penetration testing evaluation standard (PTES) to create a methodological approach and penetration testing from a graphical user interface written in Python. 
+The overall intent of this project is to provide a user with a menu that you can use the Penetration Testing Evaluation Standard (PTES) to create a methodological approach to conduct penetration testing via menu prompts. 
 
 ## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP
 ---
