@@ -12,7 +12,7 @@ d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888 
 
 ADautomator is a comprehensive toolkit designed for cybersecurity professionals focusing on Active Directory environments. It automates various tasks related to Active Directory security, including package installation, domain enumeration, and advanced network analysis. The tool is built in Python and integrates various external tools and scripts, making it a versatile solution for network administrators and security experts. 
 
-## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP. This can easily be done, but I will not include this for public use.
+## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP. This can easily be done, but I wont include that capability for public use.
 ---
 
 ## Key Features
@@ -28,6 +28,10 @@ ADautomator is a comprehensive toolkit designed for cybersecurity professionals 
 ### Installation
 ```bash
 python3 ADautomator.py --install
+```
+### Get Help
+```bash
+python3 ADautomator.py -h
 ```
 ### Basic Commands
 - Execute a full frontal attack on the Active Directory network
