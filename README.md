@@ -34,13 +34,13 @@ python3 ADautomator.py --install
 python3 ADautomator.py -h
 ```
 ### Basic Commands
+- Run an anonymous scan on the AD network
+```bash
+python3 ADautomator.py --adnuke -ip [IP_ADDRESS]
+```
 - Execute a full frontal attack on the Active Directory network
 ```bash
-python ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -out [OUTPUT_FILE]
-```
-### Run a light Domain Enumeration
-```bash
-python ADautomator.py --domainenum -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -out [OUTPUT_FILE]
+python3 ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -out [OUTPUT_FILE]
 ```
 
 ## Upcoming Features!!
@@ -50,12 +50,20 @@ python ADautomator.py --domainenum -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] 
 - Automated password and username spraying after usernames are identified
 
 
+## Help 
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/93354f62-d48a-42a3-b8cc-e9df3a2e1eb8)
 
-##
+## Detects Domain Lockout Policy with user input to understand the danger
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/82054d5d-b697-4aea-9cf1-3783acefdcde)
 
+## Get Hashes to use in a pass the hash attack or login with PSexec
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/974e8e83-ad15-47a1-97d5-3e87b931a40f)
 
-## Run multiple commands with a single click with known or unknown credentials
-![image](https://github.com/csb21jb/ADautomator/assets/94072917/8beff47a-6977-4f84-bb48-48868c3405df)
+## Get users and save them to a file
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/bb177e90-d1a4-405c-9af6-9e6fe49fd7c7)
+
+![image](https://github.com/csb21jb/ADautomator/assets/94072917/86872e78-4c51-4428-8c5b-bfec993fa014)
+
 
 
 ![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
