@@ -30,12 +30,10 @@ def install_packages(args):
     subprocess.run(['sudo', 'apt', 'install', 'crackmapexec', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'ntpdate', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'python3-impacket', '-y'])
-    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/format-plugins.rb'])
-    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/username-anarchy'])
     print(f"Running Installation: {args.install}")
     print("Installing necessary packages...")
 
-# Code to install packages
+# Code to generate a timestamped filename
 def generate_filename(ip):
     current_time = datetime.now().strftime('%d%b%y%H%M')
     filename = f"{ip}_{current_time}.txt"
@@ -373,7 +371,7 @@ if __name__ == "__main__":
     parser.add_argument("--domainenum", help="Run ALL CrackMapExec Modules and Flags set", action='store_true')
     args = parser.parse_args()
     
-    if not any([args.adnuke, args.domainenum]):
+    if not any([args.adnuke, args.domainenum, args.install]):
         parser.error("You must use one of the following --adnuke, --domainenum, or --install")
     
     if args.adnuke and not args.ipaddress:
@@ -381,5 +379,6 @@ if __name__ == "__main__":
     
     if args.domainenum and not args.ipaddress:
         parser.error("--domainenum requires --ip to be specified")
+
 
     main(args)
