@@ -34,6 +34,10 @@ python3 ADautomator.py --install
 ```bash
 python ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -out [OUTPUT_FILE]
 ```
+### Run a light Domain Enumeration
+```bash
+python ADautomator.py --domainenum -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -out [OUTPUT_FILE]
+```
 
 ## Upcoming Features!!
 
