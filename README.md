@@ -45,10 +45,10 @@ python3 ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -ou
 
 ## Upcoming Features!!
 
-- Cradle to grave Active Directory Penetration testing using the PTES framework
+- Cradle to grave Active Directory Penetration testing using crackmapexec
 - The use of kerbrute to gather usernames
 - Automated password and username spraying after usernames are identified
-- flags to be used with the crackmapexec.py script from [here](https://github.com/byt3bl33d3r/CrackMapExec)
+- Interoperability with the crackmapexec.py script from [here](https://github.com/byt3bl33d3r/CrackMapExec)
 - Additional modules including mssql, winrm, ssh, and ftp
 
 
