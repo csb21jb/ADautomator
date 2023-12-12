@@ -10,7 +10,7 @@ d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888 
 ```
 ## Overview
 
-ADautomator is a comprehensive toolkit designed for cybersecurity professionals focusing on Active Directory environments. It automates various tasks related to Active Directory security, including package installation, domain enumeration, and advanced network analysis. The tool is built in Python and integrates various external tools and scripts, making it a versatile solution for network administrators and security experts. 
+ADautomator is a comprehensive toolkit designed for cybersecurity professionals focusing on Active Directory environments. It automates various tasks related to Active Directory security, including package installation, domain enumeration, and advanced network analysis. The tool is built in Python and integrates various external tools and scripts, making it a versatile solution for network administrators and security experts. It was also designed to be used with the crackmapexec version from the kali linux repo.
 
 ## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP. This can easily be done, but I wont include that capability for public use.
 ---
@@ -48,6 +48,8 @@ python3 ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -ou
 - Cradle to grave Active Directory Penetration testing using the PTES framework
 - The use of kerbrute to gather usernames
 - Automated password and username spraying after usernames are identified
+- flags to be used with the crackmapexec.py script from [here](https://github.com/byt3bl33d3r/CrackMapExec)
+- Additional modules including mssql, winrm, ssh, and ftp
 
 
 ## Help 
@@ -62,9 +64,10 @@ python3 ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -ou
 ## Get users and save them to a file
 ![image](https://github.com/csb21jb/ADautomator/assets/94072917/bb177e90-d1a4-405c-9af6-9e6fe49fd7c7)
 
+
 ![image](https://github.com/csb21jb/ADautomator/assets/94072917/86872e78-4c51-4428-8c5b-bfec993fa014)
 
-
+https://github.com/csb21jb/ADautomator/assets/94072917/bf47d90d-8fa5-4978-b9a3-5bd515020a2a
 
 ![Supported Python versions](https://img.shields.io/badge/python-3.7%20|%203.8%20|%203.9%20|%203.10-blue.svg)
 
