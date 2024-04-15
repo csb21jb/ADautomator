@@ -27,7 +27,7 @@ def print_banner():
 # Code to install packages
 def install_packages(args):
     subprocess.run(['sudo', 'apt', 'install', 'seclists', '-y'])
-    subprocess.run(['sudo', 'apt', 'install', 'crackmapexec', '-y'])
+    subprocess.run(['sudo', 'apt', 'install', 'netexec', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'ntpdate', '-y'])
     subprocess.run(['sudo', 'apt', 'install', 'python3-impacket', '-y'])
     subprocess.run(['wget', 'https://raw.githubusercontent.com/urbanadventurer/username-anarchy/master/format-plugins.rb'])
@@ -111,7 +111,7 @@ def check_users(output, ip_address):
     # Print the alert if any usernames were found
     if usernames:
         print("\033[93m\033[1mAlert: Found usernames! They will be saved as users.txt.\033[0m\033[0m")
-        print("\033[93m\033[1mUSAGE: crackmapexec smb IP -u users.txt -p password.txt\033[0m\033[0m")
+        print("\033[93m\033[1mUSAGE: netexec smb IP -u users.txt -p password.txt\033[0m\033[0m")
         print("\033[93m\033[1mUSAGE: sudo python3 ADautomator.py --adnuke -u users.txt -p PASSWORD\033[0m\033[0m")
         
 
@@ -139,7 +139,7 @@ def check_rdp_status(output, ip_address):
         print(f"\033[93m\033[1mAlert: RDP IS NOW ENABLED {ip_address}.\033[0m\033[0m")
 
 
-# Code to run ADNuke which is CrackMapExec with all smb and ldap flags set
+# Code to run ADNuke which is netexec with all smb and ldap flags set
 def run_adnuke(ip_address, username, password, args):
     flag_checks = {
     '': check_pwned,
@@ -177,7 +177,7 @@ def run_adnuke(ip_address, username, password, args):
 
     # Loop through all smb flags and modules
     for smbflag in smbflags:
-        command = ['crackmapexec', 'smb', args.ipaddress]
+        command = ['netexec', 'smb', args.ipaddress]
         if args.username:
             command.extend(['-u', args.username])
         if args.password:
@@ -215,7 +215,7 @@ def run_adnuke(ip_address, username, password, args):
     # Loop through all ldap flags and modules
     for ldapflag in ldapflags:
         print(f"Processing flag: {ldapflag}")
-        command = ['crackmapexec', 'ldap', args.ipaddress]
+        command = ['netexec', 'ldap', args.ipaddress]
         if args.username:
             command.extend(['-u', args.username])
         if args.password:
@@ -327,7 +327,7 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--username', help='Username for any tool', default='')
     parser.add_argument('-p', '--password', help='Password for any tool', default='')
     parser.add_argument('-H', '--hash', help='Hash for any tool', default='')
-    parser.add_argument("--adnuke", help="Run CrackMapExec with DC IP, username, password and all smb and ldap flags set", action='store_true')
+    parser.add_argument("--adnuke", help="Run netexec with DC IP, username, password and all smb and ldap flags set", action='store_true')
     parser.add_argument("--kerbrute", help="Run Kerbrute with specified options", nargs='*', type=str)
     args = parser.parse_args()
     
