@@ -10,17 +10,17 @@ d88P     888 8888888P"  "Y888888  "Y88888  "Y888 "Y88P"  888  888  888 "Y888888 
 ```
 ## Overview
 
-ADautomator is a comprehensive toolkit designed for cybersecurity professionals focusing on Active Directory environments. It automates various tasks related to Active Directory security, including package installation, domain enumeration, and advanced network analysis. The tool is built in Python and integrates various external tools and scripts, making it a versatile solution for network administrators and security experts. It was also designed to be used with the crackmapexec version from the kali linux repo.
+ADautomator is a comprehensive toolkit designed for cybersecurity professionals focusing on Active Directory environments. It automates various tasks related to Active Directory security, including package installation, domain enumeration, and advanced network analysis. The tool is built in Python and integrates various external tools and scripts, making it a versatile solution for network administrators and security experts. It was also designed to be used with the netexec version from the kali linux repo.
 
 ## This tool will not automatically exploit a vulnerability and should be allowed to use on popular penetration testing certifications such as PNPT and OSCP. This can easily be done, but I wont include that capability for public use.
 ---
 
 ## Key Features
 
-- Automated Package Installation: Streamlines the setup process by installing essential tools like seclists, crackmapexec, ntpdate, and python3-impacket.
+- Automated Package Installation: Streamlines the setup process by installing essential tools like seclists, netexec, ntpdate, and python3-impacket.
 - Facilitates thorough scanning and enumeration of Active Directory domains.
 - Includes features for detecting lockout policies, finding NTLM hash segments, and identifying potential vulnerabilities.
-- Automated SMB and LDAP protocol penetration testing via crackmapexec.
+- Automated SMB and LDAP protocol penetration testing via netexec.
 - Output Management: Capable of redirecting output to files for further analysis.
 - User Interaction and Alerts: Provides interactive prompts and color-coded alerts to inform users about critical findings or potential risks.
 
@@ -45,10 +45,9 @@ python3 ADautomator.py --adnuke -ip [IP_ADDRESS] -u [USERNAME] -p [PASSWORD] -ou
 
 ## Upcoming Features!!
 
-- Cradle to grave Active Directory Penetration testing using crackmapexec
+- Cradle to grave Active Directory Penetration testing using netexec
 - The use of kerbrute to gather usernames
 - Automated password and username spraying after usernames are identified
-- Interoperability with the crackmapexec.py script from [here](https://github.com/byt3bl33d3r/CrackMapExec)
 - Additional modules including mssql, winrm, ssh, and ftp
 
 
